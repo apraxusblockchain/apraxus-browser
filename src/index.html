@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apraxus Browser</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <div id="browser">
+    <header id="toolbar">
+      <div id="navigation">
+        <button id="back">←</button>
+        <button id="forward">→</button>
+        <button id="reload">↻</button>
+      </div>
+
+      <input
+        id="address"
+        type="text"
+        placeholder="Search or enter a web address"
+        autocomplete="off"
+        spellcheck="false"
+      />
+
+      <button id="menu">⋯</button>
+    </header>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require("electron");
+
+    const address = document.getElementById("address");
+
+    address.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        ipcRenderer.send("navigate", address.value);
+      }
+    });
+
+    document.getElementById("back").addEventListener("click", () => {
+      ipcRenderer.send("go-back");
+    });
+
+    document.getElementById("forward").addEventListener("click", () => {
+      ipcRenderer.send("go-forward");
+    });
+
+    document.getElementById("reload").addEventListener("click", () => {
+      ipcRenderer.send("reload");
+    });
+
+    ipcRenderer.on("page-url", (_event, url) => {
+      address.value = url;
+    });
+  </script>
+</body>
+</html>
