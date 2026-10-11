@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#101722" />
+  <title>New Tab — Apraxus</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101722;
+      --surface: #192332;
+      --surface-hover: #283446;
+      --border: rgba(255,255,255,.085);
+      --text: #F3F4F6;
+      --muted: #9AA7B7;
+      --accent: #8B78F6;
+      --accent-soft: rgba(139,120,246,.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+        "Helvetica Neue", sans-serif;
+      background:
+        radial-gradient(ellipse at 50% 20%, rgba(139,120,246,.07), transparent 42%),
+        var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+    }
+
+    .app {
+      width: min(1100px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 34px 46px 26px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      flex: 0 0 36px;
+      display: block;
+      object-fit: contain;
+      border-radius: 9px;
+      background: transparent;
+    }
+
+    .brand-name {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display",
+        "Helvetica Neue", sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    .brand-caption {
+      margin-top: 3px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .top-date {
+      text-align: right;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .top-date strong {
+      display: block;
+      color: #E9EEF4;
+      font-size: 13px;
+      font-weight: 550;
+    }
+
+    .hero {
+      width: min(690px, 100%);
+      margin: auto;
+      padding: 65px 0 82px;
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 21px;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 650;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 22px;
+      height: 1px;
+      background: var(--accent);
+      opacity: .8;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(37px, 5.4vw, 58px);
+      font-weight: 620;
+      line-height: 1.07;
+      letter-spacing: -.065em;
+    }
+
+    h1 span {
+      color: #AEB9C8;
+      font-weight: 430;
+    }
+
+    .intro {
+      max-width: 460px;
+      margin: 17px 0 31px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .search {
+      height: 62px;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      padding: 0 17px;
+      border: 1px solid rgba(255,255,255,.11);
+      border-radius: 17px;
+      background: rgba(25,26,27,.94);
+      box-shadow: 0 14px 45px rgba(0,0,0,.17);
+      transition: border-color .18s ease, background .18s ease,
+        box-shadow .18s ease;
+    }
+
+    .search:focus-within {
+      border-color: rgba(85,214,190,.52);
+      background: #1b1d1d;
+      box-shadow: 0 0 0 4px rgba(85,214,190,.055),
+        0 18px 45px rgba(0,0,0,.2);
+    }
+
+    .search-icon {
+      color: var(--accent);
+      font-size: 23px;
+      line-height: 1;
+    }
+
+    #search {
+      flex: 1;
+      min-width: 0;
+      height: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    #search::placeholder {
+      color: #8491A2;
+    }
+
+    .search-hint {
+      padding: 5px 8px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: #A5B0BF;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 29px 0 14px;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      color: #dfe1dc;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .01em;
+    }
+
+    .section-heading span {
+      color: #777c76;
+      font-size: 11px;
+    }
+
+    .shortcuts {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .shortcut {
+      min-width: 0;
+      min-height: 91px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: rgba(24,25,26,.72);
+      text-align: left;
+      cursor: pointer;
+      transition: background .18s ease, border-color .18s ease,
+        transform .18s ease;
+    }
+
+    .shortcut:hover {
+      transform: translateY(-2px);
+      background: var(--surface-hover);
+      border-color: rgba(255,255,255,.17);
+    }
+
+    .shortcut:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .shortcut-icon {
+      width: 29px;
+      height: 29px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: #202B3A;
+      color: #e9ebe7;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .shortcut-icon.accent {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-color: rgba(85,214,190,.15);
+    }
+
+    .shortcut-label {
+      overflow: hidden;
+      max-width: 100%;
+      color: #D4DCE6;
+      font-size: 11px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .note {
+      display: flex;
+      align-items: flex-start;
+      gap: 13px;
+      margin-top: 25px;
+      padding: 17px 18px;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: rgba(23,24,25,.52);
+    }
+
+    .note-icon {
+      width: 31px;
+      height: 31px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(85,214,190,.15);
+      border-radius: 10px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 15px;
+    }
+
+    .note h2 {
+      margin: 1px 0 5px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .note p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      padding-top: 19px;
+      border-top: 1px solid rgba(255,255,255,.055);
+      color: #737871;
+      font-size: 10px;
+    }
+
+    .footer-brand {
+      color: #AEB9C8;
+      font-weight: 600;
+      letter-spacing: .015em;
+    }
+
+    @media (min-height: 800px) {
+      .hero {
+        padding-top: 80px;
+        padding-bottom: 90px;
+      }
+    }
+
+    @media (max-width: 650px) {
+      .app {
+        padding: 24px 20px;
+      }
+
+      .hero {
+        padding: 58px 0;
+      }
+
+      .shortcuts {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .shortcut {
+        min-height: 83px;
+      }
+
+      .top-date {
+        font-size: 10px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .app {
+        padding: 20px 14px;
+      }
+
+      .shortcuts {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .search-hint {
+        display: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header class="top">
+      <div class="brand">
+        <img class="brand-mark" src="assets/apraxus-browser-icon.png" alt="Apraxus" />
+        <div>
+          <div class="brand-name">Apraxus</div>
+          <div class="brand-caption">Your space on the internet</div>
+        </div>
+      </div>
+
+      <div class="top-date">
+        <strong id="clock">Welcome back</strong>
+        <span id="date"></span>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="eyebrow">A better way to browse</div>
+
+      <h1>Make room for<br /><span>what matters.</span></h1>
+
+      <p class="intro">
+        One place to explore the web, find what you need,
+        and get on with your day.
+      </p>
+
+      <form id="search-form" class="search" role="search">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input
+          id="search"
+          type="text"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="Search the web or enter an address"
+          aria-label="Search the web or enter a website address"
+          autofocus
+        />
+        <span class="search-hint">↵ Enter</span>
+      </form>
+
+      <div class="section-heading">
+        <h2>Quick access</h2>
+        <span>Your everyday destinations</span>
+      </div>
+
+      <nav class="shortcuts" aria-label="Quick access websites">
+        <button class="shortcut" data-url="https://www.google.com">
+          <span class="shortcut-icon accent">G</span>
+          <span class="shortcut-label">Google</span>
+        </button>
+
+        <button class="shortcut" data-url="https://www.youtube.com">
+          <span class="shortcut-icon">▶</span>
+          <span class="shortcut-label">YouTube</span>
+        </button>
+
+        <button class="shortcut" data-url="https://github.com">
+          <span class="shortcut-icon">⌘</span>
+          <span class="shortcut-label">GitHub</span>
+        </button>
+
+        <button class="shortcut" data-url="https://chatgpt.com">
+          <span class="shortcut-icon accent">✳</span>
+          <span class="shortcut-label">ChatGPT</span>
+        </button>
+
+        <button class="shortcut" data-url="https://x.com">
+          <span class="shortcut-icon">𝕏</span>
+          <span class="shortcut-label">X</span>
+        </button>
+      </nav>
+
+      <section class="note" aria-label="Apraxus browser information">
+        <div class="note-icon" aria-hidden="true">✦</div>
+        <div>
+          <h2>A more considered web experience</h2>
+          <p>
+            Your next destination is one search away.
+            Your browser should stay out of the way and let you focus.
+          </p>
+        </div>
+      </section>
+    </section>
+
+    <footer class="footer">
+      <span class="footer-brand">APRAXUS</span>
+      <span>Browse. Act. Pay.</span>
+      <span>Built for the next internet.</span>
+    </footer>
+  </main>
+
+  <script>
+    const search = document.getElementById("search");
+    const form = document.getElementById("search-form");
+
+    function navigate(value) {
+      const input = value.trim();
+
+      if (!input) return;
+
+      if (/^https?:\/\//i.test(input)) {
+        window.location.href = input;
+        return;
+      }
+
+      if (/^[a-z0-9.-]+\.[a-z]{2,}(\/.*)?$/i.test(input)) {
+        window.location.href = `https://${input}`;
+        return;
+      }
+
+      window.location.href =
+        `https://www.google.com/search?q=${encodeURIComponent(input)}`;
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      navigate(search.value);
+    });
+
+    document.querySelectorAll(".shortcut").forEach((button) => {
+      button.addEventListener("click", () => {
+        navigate(button.dataset.url);
+      });
+    });
+
+    function updateClock() {
+      const now = new Date();
+      const hour = now.getHours();
+
+      let greeting = "Good evening";
+      if (hour < 12) greeting = "Good morning";
+      else if (hour < 17) greeting = "Good afternoon";
+
+      document.getElementById("clock").textContent = greeting;
+      document.getElementById("date").textContent =
+        now.toLocaleDateString(undefined, {
+          weekday: "long",
+          month: "long",
+          day: "numeric"
+        });
+    }
+
+    updateClock();
+    setInterval(updateClock, 60000);
+  </script>
+</body>
+</html>

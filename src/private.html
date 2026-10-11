@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apraxus Incognito</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #09090d;
+      color: #f4f2f8;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #09090d; }
+    .bar {
+      height: 94px; display: flex; flex-direction: column;
+      background: #101016; border-bottom: 1px solid #292631;
+      -webkit-app-region: drag;
+    }
+    .top {
+      height: 38px; display: flex; align-items: center;
+      padding: 0 14px; gap: 9px;
+    }
+    .brand { font-size: 13px; font-weight: 700; letter-spacing: .3px; }
+    .badge {
+      color: #c6b4ff; border: 1px solid #51416d;
+      border-radius: 20px; padding: 3px 8px; font-size: 10px;
+    }
+    .spacer { flex: 1; }
+    button, input { font: inherit; }
+    button {
+      color: #ded9e8; background: #1b1922; border: 1px solid #302b39;
+      border-radius: 7px; height: 30px; min-width: 32px; cursor: pointer;
+    }
+    button:hover { background: #292432; }
+    .top button { -webkit-app-region: no-drag; }
+    .toolbar {
+      height: 56px; display: flex; align-items: center;
+      padding: 0 13px 12px; gap: 7px;
+    }
+    .toolbar button, input { -webkit-app-region: no-drag; }
+    #address {
+      flex: 1; min-width: 0; height: 36px; border-radius: 10px;
+      padding: 0 13px; background: #08080c; color: #f4f2f8;
+      border: 1px solid #302b39; outline: none;
+    }
+    #address:focus { border-color: #8b6be8; }
+    .close { color: #ffb8bf; }
+  </style>
+</head>
+<body>
+  <header class="bar">
+    <div class="top">
+      <span class="brand">A PRAXUS</span>
+      <span class="badge">INCOGNITO</span>
+      <span class="spacer"></span>
+      <button id="close" class="close" title="Close private window">×</button>
+    </div>
+    <div class="toolbar">
+      <button id="back" title="Back">‹</button>
+      <button id="forward" title="Forward">›</button>
+      <button id="reload" title="Reload">↻</button>
+      <input id="address" type="text" placeholder="Search privately or enter a web address"
+        autocomplete="off" spellcheck="false">
+      <button id="go" title="Go">↗</button>
+    </div>
+  </header>
+  <div id="download-status" aria-live="polite"
+    style="display:none;padding:8px 14px;background:#17141f;color:#dcd3f2;font-size:12px;border-bottom:1px solid #302b39"></div>
+  <script>
+    const address = document.getElementById("address");
+    const downloadStatus = document.getElementById("download-status");
+
+    window.apraxus.onPrivateDownloadStatus((data) => {
+      if (!data) return;
+      downloadStatus.style.display = "block";
+
+      if (data.state === "started") {
+        downloadStatus.textContent = `Downloading ${data.filename}…`;
+      } else if (data.state === "progress" && data.total > 0) {
+        downloadStatus.textContent =
+          `Downloading ${data.filename} — ${Math.round(data.received / data.total * 100)}%`;
+      } else if (data.state === "completed") {
+        downloadStatus.textContent = `Download complete: ${data.filename}`;
+      } else if (data.state === "failed" || data.state === "cancelled") {
+        downloadStatus.textContent = `Download ${data.state}: ${data.filename}`;
+      }
+    });
+
+    address.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        window.apraxus.privateNavigate(address.value);
+      }
+    });
+
+    document.getElementById("go").addEventListener("click", () => {
+      window.apraxus.privateNavigate(address.value);
+    });
+    document.getElementById("back").addEventListener("click", () => {
+      window.apraxus.privateBack();
+    });
+    document.getElementById("forward").addEventListener("click", () => {
+      window.apraxus.privateForward();
+    });
+    document.getElementById("reload").addEventListener("click", () => {
+      window.apraxus.privateReload();
+    });
+    document.getElementById("close").addEventListener("click", () => {
+      window.apraxus.closePrivateWindow();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      const modifier = event.metaKey || event.ctrlKey;
+      const key = event.key.toLowerCase();
+
+      if (modifier && event.shiftKey && key === "n") {
+        event.preventDefault();
+        window.apraxus.openPrivateWindow();
+      } else if (modifier && key === "l") {
+        event.preventDefault();
+        address.focus();
+        address.select();
+      } else if (modifier && key === "r") {
+        event.preventDefault();
+        window.apraxus.privateReload();
+      } else if (event.key === "Escape" && document.activeElement === address) {
+        address.blur();
+      }
+    });
+
+    window.apraxus.onPrivateUrl((url) => {
+      if (url && document.activeElement !== address) address.value = url;
+    });
+
+    window.apraxus.getPrivateUrl().then((url) => {
+      if (url && document.activeElement !== address) address.value = url;
+    });
+  </script>
+</body>
+</html>

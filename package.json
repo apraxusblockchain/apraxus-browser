@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npm run build && electron .",
-    "build": "tsc"
+    "build": "tsc && cp src/index.html dist/index.html && cp src/styles.css dist/styles.css && cp src/newtab.html dist/newtab.html && cp src/settings.html dist/settings.html && cp src/private.html dist/private.html && cp src/search.html dist/search.html && mkdir -p dist/assets && cp assets/apraxus-browser-icon.png dist/assets/apraxus-browser-icon.png"
   },
   "keywords": [],
   "author": "",
@@ -14,9 +14,28 @@
   "type": "commonjs",
   "devDependencies": {
     "electron": "^44.6.0",
+    "electron-builder": "^26.15.3",
     "typescript": "^7.0.2"
   },
   "dependencies": {
-    "electron-builder": "^26.15.3"
+    "dotenv": "^18.0.7"
+  },
+  "build": {
+    "appId": "com.apraxus.browser",
+    "productName": "Apraxus Browser",
+    "mac": {
+      "icon": "assets/apraxus-browser.icns"
+    },
+    "win": {
+      "icon": "assets/apraxus-browser-icon.png"
+    },
+    "linux": {
+      "icon": "assets/apraxus-browser-icon.png"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json",
+      "node_modules/**/*"
+    ]
   }
 }

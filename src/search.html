@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#08090b" />
+  <title>AI Search — Apraxus</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #08090b;
+      --surface: #111318;
+      --surface-hover: #181b21;
+      --border: rgba(255,255,255,.09);
+      --text: #f5f7fa;
+      --muted: #969daa;
+      --accent: #b9ff3d;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(185,255,61,.055), transparent 42%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+    }
+
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+
+    .topbar {
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 18px;
+      font-weight: 750;
+      letter-spacing: -.6px;
+    }
+
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #080a04;
+      font-weight: 900;
+      font-size: 19px;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    main {
+      width: min(850px, calc(100% - 40px));
+      margin: 48px auto 80px;
+    }
+
+    .search-area { margin-bottom: 34px; }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(29px, 4vw, 39px);
+      letter-spacing: -1.7px;
+    }
+
+    .subtitle {
+      margin: 0 0 25px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 58px;
+      padding: 7px 8px 7px 17px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      transition: border-color .18s, box-shadow .18s;
+    }
+
+    .search-box:focus-within {
+      border-color: rgba(185,255,61,.48);
+      box-shadow: 0 0 0 4px rgba(185,255,61,.055);
+    }
+
+    .search-icon { color: var(--accent); font-size: 23px; }
+
+    #query {
+      flex: 1;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      color: var(--text);
+      background: transparent;
+      font-size: 15px;
+    }
+
+    #query::placeholder { color: #727987; }
+
+    .model-select {
+      max-width: 150px;
+      padding: 9px 8px;
+      color: #c4c9d1;
+      background: #191c22;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      outline: 0;
+      font-size: 12px;
+    }
+
+    .search-button {
+      padding: 11px 16px;
+      color: #090b05;
+      background: var(--accent);
+      border: 0;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .search-button:hover { filter: brightness(1.06); }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 13px;
+    }
+
+    h2 { margin: 0; font-size: 17px; letter-spacing: -.35px; }
+
+    .status {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .overview {
+      padding: 23px;
+      border: 1px solid rgba(185,255,61,.17);
+      border-radius: 17px;
+      background: linear-gradient(135deg, rgba(185,255,61,.045), rgba(17,19,24,.96) 45%);
+    }
+
+    .overview-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .spark {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+      color: var(--accent);
+      background: rgba(185,255,61,.1);
+      font-size: 17px;
+    }
+
+    #overview-copy {
+      margin: 0;
+      color: #c3c8d1;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .notice {
+      display: flex;
+      gap: 9px;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .results-section { margin-top: 32px; }
+
+    .results-list { display: grid; gap: 10px; }
+
+    .result {
+      display: block;
+      padding: 18px 20px;
+      color: inherit;
+      text-decoration: none;
+      background: rgba(17,19,24,.82);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      transition: background .15s, border-color .15s, transform .15s;
+    }
+
+    .result:hover {
+      background: var(--surface-hover);
+      border-color: rgba(255,255,255,.17);
+      transform: translateY(-1px);
+    }
+
+    .result-domain {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .result-title {
+      display: block;
+      margin-bottom: 7px;
+      color: #d9e9b9;
+      font-size: 16px;
+      font-weight: 650;
+    }
+
+    .result-description {
+      display: block;
+      color: #a5acb7;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .empty {
+      padding: 26px;
+      text-align: center;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: 13px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .footer {
+      padding: 28px 0;
+      color: #626977;
+      text-align: center;
+      font-size: 11px;
+    }
+
+    @media (max-width: 600px) {
+      .topbar { padding: 0 18px; }
+      main { margin-top: 34px; }
+      .search-box { flex-wrap: wrap; padding: 12px; }
+      #query { min-height: 35px; }
+      .model-select { flex: 1; max-width: none; }
+      .search-button { flex: 1; }
+      .overview { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="apraxus://newtab" id="home-link">
+      <span class="brand-mark">A</span>
+      <span>Apraxus <span style="font-weight:450;color:#969daa">Search</span></span>
+    </a>
+    <span class="label">AI-powered search experience</span>
+  </header>
+
+  <main>
+    <section class="search-area">
+      <h1>Search beyond the obvious.</h1>
+      <p class="subtitle">Explore the web with Apraxus AI Search.</p>
+
+      <form class="search-box" id="search-form">
+        <span class="search-icon">⌕</span>
+        <input id="query" type="text" placeholder="Ask a question or search the web..." autocomplete="off" autofocus />
+        <select class="model-select" id="model" aria-label="AI model">
+          <option value="auto">Auto · Best Available</option>
+          <option value="web">Web Search · No AI summary</option>
+          <option value="openai">OpenAI · API key required</option>
+          <option value="gemini">Gemini · API key required</option>
+          <option value="claude">Claude · API key required</option>
+        </select>
+        <button class="search-button" type="submit">Search ↗</button>
+      </form>
+    </section>
+
+    <section aria-labelledby="overview-heading">
+      <div class="section-heading">
+        <h2 id="overview-heading">AI Overview</h2>
+        <span class="status" id="overview-status">Not generated</span>
+      </div>
+      <div class="overview">
+        <div class="overview-title">
+          <span class="spark">✳</span>
+          <span>A clearer starting point</span>
+        </div>
+        <p id="overview-copy">Enter a search above to explore relevant web results. AI-generated summaries will appear here when a verified AI provider is connected.</p>
+        <div class="notice">
+          <span>ⓘ</span>
+          <span>Web results come from the configured search service. AI summaries require a configured AI provider, and cited sources should always be checked directly.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="results-section" aria-labelledby="recent-heading" id="recent-section">
+      <div class="section-heading">
+        <h2 id="recent-heading">Recent searches</h2>
+        <button id="clear-recent" type="button" style="color:var(--muted);background:transparent;border:0;font-size:12px;">Clear</button>
+      </div>
+      <div id="recent-searches" class="results-list">
+        <div class="empty">Your recent searches will appear here.</div>
+      </div>
+    </section>
+
+    <section class="results-section" aria-labelledby="results-heading">
+      <div class="section-heading">
+        <h2 id="results-heading">Web results</h2>
+        <span class="status" id="results-status">Ready to search</span>
+      </div>
+      <div id="results" class="results-list">
+        <div class="empty">Your search results will appear here.<br />Search the web, explore sources, and get AI-powered summaries when a provider is configured.</div>
+      </div>
+    </section>
+
+    <footer class="footer">Apraxus Browser · The browser for the next internet.</footer>
+  </main>
+
+  <script>
+    const form = document.getElementById("search-form");
+    const queryInput = document.getElementById("query");
+    const modelSelect = document.getElementById("model");
+    const results = document.getElementById("results");
+    const resultsStatus = document.getElementById("results-status");
+    const overviewStatus = document.getElementById("overview-status");
+    const overviewCopy = document.getElementById("overview-copy");
+    const recentSearches = document.getElementById("recent-searches");
+    const clearRecentButton = document.getElementById("clear-recent");
+    const RECENT_SEARCHES_KEY = "apraxus-ai-search-history";
+    const MAX_RECENT_SEARCHES = 8;
+    let activeSearchId = 0;
+
+    function readRecentSearches() {
+      try {
+        const value = JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY) || "[]");
+        return Array.isArray(value)
+          ? value.filter((item) => typeof item === "string").slice(0, MAX_RECENT_SEARCHES)
+          : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function renderRecentSearches() {
+      const items = readRecentSearches();
+      recentSearches.replaceChildren();
+
+      if (!items.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "Your recent searches will appear here.";
+        recentSearches.appendChild(empty);
+        return;
+      }
+
+      for (const item of items) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "result";
+        button.style.width = "100%";
+        button.style.textAlign = "left";
+        button.textContent = "⌕  " + item;
+        button.addEventListener("click", () => {
+          queryInput.value = item;
+          void runSearch(item);
+        });
+        recentSearches.appendChild(button);
+      }
+    }
+
+    function saveRecentSearch(query) {
+      const normalized = query.trim().slice(0, 2000);
+      if (!normalized) return;
+
+      const updated = [
+        normalized,
+        ...readRecentSearches().filter(
+          (item) => item.toLowerCase() !== normalized.toLowerCase()
+        ),
+      ].slice(0, MAX_RECENT_SEARCHES);
+
+      try {
+        localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+      } catch {
+        // Search still works if local storage is unavailable.
+      }
+
+      renderRecentSearches();
+    }
+
+    clearRecentButton.addEventListener("click", () => {
+      try {
+        localStorage.removeItem(RECENT_SEARCHES_KEY);
+      } catch {
+        // Keep the UI responsive if local storage is unavailable.
+      }
+      renderRecentSearches();
+    });
+
+    renderRecentSearches();
+
+    function renderSummary(summary, sources) {
+      overviewCopy.replaceChildren();
+
+      const parts = summary.split(/(\[\d+\])/g);
+
+      for (const part of parts) {
+        const match = part.match(/^\[(\d+)\]$/);
+
+        if (!match) {
+          overviewCopy.appendChild(document.createTextNode(part));
+          continue;
+        }
+
+        const index = Number(match[1]) - 1;
+        const source = sources[index];
+
+        if (!source) {
+          overviewCopy.appendChild(document.createTextNode(part));
+          continue;
+        }
+
+        const link = document.createElement("a");
+        link.href = source.url;
+        link.textContent = part;
+        link.target = "_self";
+        link.rel = "noopener noreferrer";
+        link.style.color = "var(--accent)";
+        link.style.textDecoration = "none";
+        link.title = source.title;
+        overviewCopy.appendChild(link);
+      }
+    }
+
+    async function runSearch(query) {
+      const value = query.trim();
+      if (!value) return;
+
+      const searchId = ++activeSearchId;
+      saveRecentSearch(value);
+
+      results.replaceChildren();
+      const loading = document.createElement("div");
+      loading.className = "empty";
+      loading.textContent = "Searching the web and preparing your results…";
+      results.appendChild(loading);
+      resultsStatus.textContent = "Searching";
+      overviewStatus.textContent = "Checking provider";
+      overviewCopy.textContent = "Connecting to the configured web search and AI services.";
+
+      try {
+        const response = await window.apraxus.aiSearch(value, modelSelect.value);
+        if (searchId !== activeSearchId) return;
+
+        results.replaceChildren();
+
+        resultsStatus.textContent =
+          response.status === "success"
+            ? `${response.sources.length} sources`
+            : response.status === "not_configured"
+              ? "Provider not configured"
+              : "Search unavailable";
+
+        if (response.status !== "success" || response.sources.length === 0) {
+          const message = document.createElement("div");
+          message.className = "empty";
+          message.textContent = response.message;
+          results.appendChild(message);
+        }
+
+        overviewStatus.textContent =
+          response.summary
+            ? "AI-generated"
+            : "AI summary unavailable";
+
+        if (response.summary) {
+          renderSummary(response.summary, response.sources);
+        } else {
+          overviewCopy.textContent =
+            response.message ||
+            "No AI-generated overview is available. Review the web results below or configure a supported AI provider.";
+        }
+
+
+        for (const source of response.sources) {
+          let parsedUrl;
+          try {
+            parsedUrl = new URL(source.url);
+          } catch {
+            continue;
+          }
+
+          if (parsedUrl.protocol !== "https:" && parsedUrl.protocol !== "http:") {
+            continue;
+          }
+
+          const link = document.createElement("a");
+          link.className = "result";
+          link.href = parsedUrl.href;
+          link.target = "_self";
+          link.rel = "noopener noreferrer";
+
+          const domain = document.createElement("span");
+          domain.className = "result-domain";
+          domain.textContent = parsedUrl.hostname;
+
+          const title = document.createElement("span");
+          title.className = "result-title";
+          title.textContent = source.title;
+
+          const description = document.createElement("span");
+          description.className = "result-description";
+          description.textContent = source.snippet;
+
+          link.append(domain, title, description);
+          results.appendChild(link);
+        }
+      } catch {
+        if (searchId !== activeSearchId) return;
+
+        results.replaceChildren();
+        const error = document.createElement("div");
+        error.className = "empty";
+        error.textContent = "Apraxus Search could not complete the request. Please try again later.";
+        results.appendChild(error);
+        resultsStatus.textContent = "Search unavailable";
+        overviewStatus.textContent = "Unavailable";
+        overviewCopy.textContent = "No AI summary is available for this query.";
+      }
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      void runSearch(queryInput.value);
+    });
+
+    document.getElementById("home-link").addEventListener("click", (event) => {
+      event.preventDefault();
+      window.location.href = "file://" + window.location.pathname.replace(/search\.html$/, "newtab.html");
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    const initialQuery = params.get("q");
+    if (initialQuery) {
+      queryInput.value = initialQuery;
+      void runSearch(initialQuery);
+    }
+  </script>
+</body>
+</html>

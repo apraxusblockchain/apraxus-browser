@@ -9,51 +9,535 @@
 
 <body>
   <div id="browser">
-    <header id="toolbar">
-      <div id="navigation">
-        <button id="back">←</button>
-        <button id="forward">→</button>
-        <button id="reload">↻</button>
+
+    <div id="tabs">
+      <div class="brand">
+        <img class="brand-mark" src="assets/apraxus-browser-icon.png" alt="Apraxus Browser logo" />
+        <span class="brand-name">Apraxus</span>
       </div>
 
-      <input
-        id="address"
-        type="text"
-        placeholder="Search or enter a web address"
-        autocomplete="off"
-        spellcheck="false"
-      />
+      <div id="tab-list"></div>
 
-      <button id="menu">⋯</button>
+      <button id="new-tab" class="icon-button tab-add" title="New Tab">+</button>
+
+      <div class="window-actions">
+        <button class="window-action" title="Minimize">−</button>
+        <button class="window-action" title="Maximize">□</button>
+        <button class="window-action close-window" title="Close">×</button>
+      </div>
+    </div>
+
+    <header id="toolbar">
+
+      <div id="navigation">
+        <button id="back" class="nav-button" title="Back">‹</button>
+        <button id="forward" class="nav-button" title="Forward">›</button>
+        <button id="reload" class="nav-button" title="Reload">↻</button>
+      </div>
+
+      <div id="address-shell">
+        <div class="address-leading">
+          <span class="site-shield">✦</span>
+        </div>
+
+        <input
+          id="address"
+          type="text"
+          placeholder="Search or enter a web address"
+          autocomplete="off"
+          spellcheck="false"
+        />
+
+        <div class="address-actions">
+          <button id="bookmark" class="address-action" title="Bookmark">☆</button>
+        </div>
+      </div>
+
+      <div class="toolbar-actions">
+
+        <select id="bookmark-list-button" class="toolbar-select" title="Bookmarks">
+          <option value="">Bookmarks</option>
+        </select>
+
+        <select id="history-list-button" class="toolbar-select history-select" title="History">
+          <option value="">History</option>
+          <option value="__clear__">Clear History</option>
+        </select>
+
+        <button id="ai-button" class="product-button" title="Apraxus AI">
+          <span class="product-icon">✦</span>
+          <span>AI</span>
+        </button>
+
+        <button id="pay-button" class="product-button" title="Apraxus Pay">
+          <span class="product-icon">↗</span>
+          <span>Pay</span>
+        </button>
+
+        <button id="wallet-button" class="wallet-button" title="Wallet">
+          <span class="wallet-dot"></span>
+          <span>Wallet</span>
+        </button>
+
+        <select id="menu-select" class="menu-select" title="Menu">
+          <option value="">•••</option>
+          <option value="new-tab">New Tab</option>
+          <option value="incognito">New Incognito Window</option>
+          <option value="reload">Reload</option>
+          <option value="bookmarks">Bookmarks</option>
+          <option value="history">History</option>
+          <option value="zoom-in">Zoom In</option>
+          <option value="zoom-out">Zoom Out</option>
+          <option value="zoom-reset">Reset Zoom</option>
+          <option value="fullscreen">Fullscreen</option>
+          <option value="settings">Settings</option>
+          <option value="clear-history">Clear History</option>
+          <option value="close-tab">Close Tab</option>
+        </select>
+
+      </div>
     </header>
+
+    <div id="find-bar" class="find-bar" aria-hidden="true">
+      <input id="find-input" type="text" placeholder="Find in page" autocomplete="off" spellcheck="false" />
+      <span id="find-count">0</span>
+      <button id="find-prev" type="button" title="Previous">↑</button>
+      <button id="find-next" type="button" title="Next">↓</button>
+      <button id="find-close" type="button" title="Close">×</button>
+    </div>
+    <div id="download-status" aria-live="polite"></div>
+
   </div>
 
   <script>
-    const { ipcRenderer } = require("electron");
-
     const address = document.getElementById("address");
+    const tabList = document.getElementById("tab-list");
+
+    function renderTab(data) {
+      document.querySelectorAll(".tab").forEach((tab) => {
+        tab.classList.remove("active");
+      });
+
+      const existing = document.getElementById(`tab-${data.id}`);
+
+      if (existing) {
+        existing.classList.add("active");
+        return;
+      }
+
+      const tab = document.createElement("div");
+      tab.className = "tab active";
+      tab.id = `tab-${data.id}`;
+
+      const favicon = document.createElement("span");
+      favicon.className = "tab-favicon";
+      favicon.textContent = "A";
+
+      const title = document.createElement("span");
+      title.className = "tab-title";
+      title.textContent = data.url || "New Tab";
+
+      const close = document.createElement("button");
+      close.className = "tab-close";
+      close.textContent = "×";
+      close.title = "Close Tab";
+
+      close.addEventListener("click", (event) => {
+        event.stopPropagation();
+        window.apraxus.closeTab(data.id);
+        tab.remove();
+      });
+
+      tab.appendChild(favicon);
+      tab.appendChild(title);
+      tab.appendChild(close);
+      tabList.appendChild(tab);
+
+      tab.addEventListener("click", () => {
+        window.apraxus.activateTab(data.id);
+      });
+    }
 
     address.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
-        ipcRenderer.send("navigate", address.value);
+        window.apraxus.navigate(address.value);
       }
     });
 
     document.getElementById("back").addEventListener("click", () => {
-      ipcRenderer.send("go-back");
+      window.apraxus.back();
     });
 
     document.getElementById("forward").addEventListener("click", () => {
-      ipcRenderer.send("go-forward");
+      window.apraxus.forward();
     });
 
     document.getElementById("reload").addEventListener("click", () => {
-      ipcRenderer.send("reload");
+      window.apraxus.reload();
     });
 
-    ipcRenderer.on("page-url", (_event, url) => {
-      address.value = url;
+    document.getElementById("new-tab").addEventListener("click", async () => {
+      try {
+        const data = await window.apraxus.newTab();
+
+        if (data) {
+          renderTab(data);
+        }
+      } catch (error) {
+        console.error("NEW TAB ERROR", error);
+      }
     });
+
+    async function updateBookmarkButton() {
+      const saved = await window.apraxus.isBookmarked();
+      document.getElementById("bookmark").textContent = saved ? "★" : "☆";
+    }
+
+    document.getElementById("bookmark").addEventListener("click", async () => {
+      const saved = await window.apraxus.toggleBookmark();
+
+      const button = document.getElementById("bookmark");
+      button.textContent = saved ? "★" : "☆";
+      await refreshBookmarks();
+    });
+
+    const bookmarkSelect = document.getElementById("bookmark-list-button");
+
+    async function refreshBookmarks() {
+      const bookmarks = await window.apraxus.getBookmarks();
+
+      bookmarkSelect.innerHTML = '<option value="">Bookmarks</option>';
+
+      bookmarks.forEach((bookmark, index) => {
+        const option = document.createElement("option");
+        option.value = String(index);
+        option.textContent = bookmark.title || bookmark.url;
+        bookmarkSelect.appendChild(option);
+      });
+    }
+
+    bookmarkSelect.addEventListener("change", async () => {
+      const index = Number(bookmarkSelect.value);
+      if (!Number.isInteger(index)) return;
+
+      const bookmarks = await window.apraxus.getBookmarks();
+      const bookmark = bookmarks[index];
+
+      if (bookmark) {
+        window.apraxus.navigate(bookmark.url);
+      }
+
+      bookmarkSelect.value = "";
+    });
+
+    refreshBookmarks();
+
+    window.apraxus.onUrlChange((url) => {
+      address.value = url;
+      updateBookmarkButton();
+      refreshHistory();
+    });
+
+    window.apraxus.getUrl().then((url) => {
+      if (url) {
+        address.value = url;
+      }
+    });
+
+    window.apraxus.onTabActivated((data) => {
+      address.value = data.url || "";
+      renderTab(data);
+      updateBookmarkButton();
+    });
+
+    window.apraxus.onTabCreated((data) => {
+      renderTab(data);
+      updateBookmarkButton();
+    });
+
+    window.apraxus.onTabTitle((data) => {
+      const tab = document.getElementById(`tab-${data.id}`);
+      if (!tab) return;
+
+      const title = tab.querySelector(".tab-title");
+
+      if (title) {
+        title.textContent = data.title || "New Tab";
+      }
+    });
+
+    updateBookmarkButton();
+
+    const historySelect = document.getElementById("history-list-button");
+
+    async function refreshHistory() {
+      const history = await window.apraxus.getHistory();
+
+      historySelect.innerHTML = '<option value="">History</option>';
+
+      history.slice(0, 30).forEach((entry, index) => {
+        const option = document.createElement("option");
+        option.value = String(index);
+        option.textContent = entry.title || entry.url;
+        historySelect.appendChild(option);
+      });
+    }
+
+    historySelect.addEventListener("change", async () => {
+      if (historySelect.value === "__clear__") {
+        await window.apraxus.clearHistory();
+        await refreshHistory();
+        return;
+      }
+
+      const index = Number(historySelect.value);
+      if (!Number.isInteger(index)) return;
+
+      const history = await window.apraxus.getHistory();
+      const entry = history[index];
+
+      if (entry) {
+        window.apraxus.navigate(entry.url);
+      }
+
+      historySelect.value = "";
+    });
+
+    refreshHistory();
+
+    const menuSelect = document.getElementById("menu-select");
+
+    menuSelect.addEventListener("change", async () => {
+      const action = menuSelect.value;
+      menuSelect.value = "";
+
+      if (action === "new-tab") {
+        const data = await window.apraxus.newTab();
+        if (data) renderTab(data);
+      }
+
+      if (action === "incognito") {
+        window.apraxus.openPrivateWindow();
+      }
+
+      if (action === "reload") {
+        window.apraxus.reload();
+      }
+
+      if (action === "zoom-in") {
+        window.apraxus.zoomIn();
+      }
+
+      if (action === "zoom-out") {
+        window.apraxus.zoomOut();
+      }
+
+      if (action === "zoom-reset") {
+        window.apraxus.zoomReset();
+      }
+      if (action === "fullscreen") {
+        window.apraxus.toggleFullscreen();
+      }
+
+
+
+      if (action === "bookmarks") {
+        bookmarkSelect.focus();
+      }
+
+      if (action === "history") {
+        historySelect.focus();
+      }
+
+      if (action === "settings") {
+        window.apraxus.navigate("apraxus://settings");
+      }
+
+      if (action === "clear-history") {
+        await window.apraxus.clearHistory();
+        await refreshHistory();
+      }
+
+      if (action === "close-tab") {
+        const active = document.querySelector(".tab.active");
+
+        if (active) {
+          const id = Number(active.id.replace("tab-", ""));
+          active.remove();
+          window.apraxus.closeTab(id);
+        }
+      }
+    });
+
+    document.querySelector('.window-action[title="Minimize"]').addEventListener("click", () => {
+      window.apraxus.minimizeWindow();
+    });
+
+    document.querySelector('.window-action[title="Maximize"]').addEventListener("click", () => {
+      window.apraxus.toggleMaximizeWindow();
+    });
+
+    document.querySelector('.window-action[title="Close"]').addEventListener("click", () => {
+      window.apraxus.closeWindow();
+    });
+
+    window.apraxus.onWindowMaximized((maximized) => {
+      const button = document.querySelector('.window-action[title="Maximize"]');
+      if (!button) return;
+
+      button.textContent = maximized ? "❐" : "□";
+      button.title = maximized ? "Restore" : "Maximize";
+    });
+
+    document.getElementById("ai-button").addEventListener("click", () => {
+      console.log("APXR AI surface reserved");
+    });
+
+    document.getElementById("pay-button").addEventListener("click", () => {
+      console.log("APXR Pay surface reserved");
+    });
+
+    document.getElementById("wallet-button").addEventListener("click", () => {
+      console.log("APXR Wallet surface reserved");
+    });
+
+    const findBar = document.getElementById("find-bar");
+    const findInput = document.getElementById("find-input");
+    const findCount = document.getElementById("find-count");
+    const findPrev = document.getElementById("find-prev");
+    const findNext = document.getElementById("find-next");
+    const findClose = document.getElementById("find-close");
+
+    function openFindBar() {
+      findBar.classList.add("visible");
+      findBar.setAttribute("aria-hidden", "false");
+      findInput.focus();
+      findInput.select();
+      findCount.textContent = "0";
+    }
+
+    function closeFindBar() {
+      findBar.classList.remove("visible");
+      findBar.setAttribute("aria-hidden", "true");
+      window.apraxus.stopFindInPage();
+      findInput.value = "";
+      findCount.textContent = "0";
+    }
+
+    findInput.addEventListener("input", () => {
+      const text = findInput.value.trim();
+      if (!text) {
+        window.apraxus.stopFindInPage();
+        findCount.textContent = "0";
+        return;
+      }
+
+      window.apraxus.findInPage(text);
+    });
+
+    findInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.shiftKey
+          ? window.apraxus.findPrevious(findInput.value)
+          : window.apraxus.findNext(findInput.value);
+        return;
+      }
+
+      if (event.key === "Escape") {
+        closeFindBar();
+      }
+    });
+
+    findPrev.addEventListener("click", () => {
+      window.apraxus.findPrevious(findInput.value);
+    });
+
+    findNext.addEventListener("click", () => {
+      window.apraxus.findNext(findInput.value);
+    });
+
+    findClose.addEventListener("click", closeFindBar);    window.apraxus.onWindowFullscreen((fullscreen) => {
+      const option = document.querySelector('#menu-select option[value="fullscreen"]');
+      if (!option) return;
+      option.textContent = fullscreen ? "Exit Fullscreen" : "Fullscreen";
+    });
+
+    window.apraxus.onFindResult((data) => {
+      if (!findBar.classList.contains("visible")) return;
+
+      if (!data || data.matches === 0) {
+        findCount.textContent = "0";
+        return;
+      }
+
+      findCount.textContent = `${data.activeMatchOrdinal}/${data.matches}`;
+    });
+
+
+
+    window.apraxus.onFocusFind(openFindBar);
+
+    const downloadStatus = document.getElementById("download-status");
+
+    window.apraxus.onDownloadStatus((data) => {
+      if (!data) return;
+
+      if (data.state === "started") {
+        downloadStatus.textContent = `Downloading ${data.filename}…`;
+        downloadStatus.classList.add("visible");
+        return;
+      }
+
+      if (data.state === "progress") {
+        if (data.total > 0) {
+          const percent = Math.round((data.received / data.total) * 100);
+          downloadStatus.textContent =
+            `Downloading ${data.filename} — ${percent}%`;
+        } else {
+          downloadStatus.textContent = `Downloading ${data.filename}…`;
+        }
+
+        downloadStatus.classList.add("visible");
+        return;
+      }
+
+      if (data.state === "completed") {
+        downloadStatus.textContent = `Downloaded ${data.filename}`;
+        downloadStatus.classList.add("visible");
+
+        setTimeout(() => {
+          downloadStatus.classList.remove("visible");
+        }, 3000);
+
+        return;
+      }
+
+      if (data.state === "failed") {
+        downloadStatus.textContent = `Download failed: ${data.filename}`;
+        downloadStatus.classList.add("visible");
+
+        setTimeout(() => {
+          downloadStatus.classList.remove("visible");
+        }, 4000);
+      }
+    });
+
+    window.apraxus.onRequestCloseTab((id) => {
+      const tab = document.getElementById(`tab-${id}`);
+
+      if (tab) {
+        tab.remove();
+      }
+
+      window.apraxus.closeTab(id);
+    });
+
+    window.apraxus.onFocusAddress(() => {
+      address.focus();
+      address.select();
+    });
+
+    window.apraxus.rendererReady();
   </script>
 </body>
 </html>

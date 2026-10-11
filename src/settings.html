@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';"
+  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apraxus Settings</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #08090b;
+      --surface: #101216;
+      --surface-2: #15181e;
+      --border: rgba(255,255,255,0.09);
+      --text: #f5f7f8;
+      --muted: #8d949e;
+      --accent: #b9ff3d;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 50% -10%, rgba(185,255,61,0.10), transparent 38%),
+        var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+        "SF Pro Text", Inter, system-ui, sans-serif;
+    }
+
+    .settings-shell {
+      width: min(920px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 48px 0 72px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 42px;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
+      background: var(--accent);
+      color: #08090b;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .brand-copy strong {
+      display: block;
+      font-size: 17px;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-copy span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 34px;
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+      margin: 9px 0 32px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .section {
+      margin-top: 22px;
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(16,18,22,0.88);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: -0.01em;
+    }
+
+    .section-description {
+      margin: 7px 0 18px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .permission-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 15px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .password-form {
+      display: grid;
+      gap: 4px;
+      margin-bottom: 18px;
+    }
+
+    .password-form input {
+      width: min(360px, 100%);
+      box-sizing: border-box;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface-2);
+      color: var(--text);
+      outline: none;
+    }
+
+    .password-form input:focus {
+      border-color: var(--accent);
+    }
+
+    #password-list {
+      display: grid;
+      gap: 0;
+    }
+
+    #password-list .permission-row {
+      margin: 0;
+    }
+
+    .permission-row:first-of-type {
+      border-top: 0;
+    }
+
+    .permission-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .permission-help {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .permission-select {
+      min-width: 130px;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface-2);
+      color: var(--text);
+      outline: none;
+    }
+
+    .permission-select:focus {
+      border-color: rgba(185,255,61,0.55);
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 16px;
+    }
+
+    button {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      background: var(--surface-2);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    button:hover {
+      border-color: rgba(185,255,61,0.45);
+    }
+
+    .danger {
+      color: #ffb4b4;
+    }
+
+    .status {
+      min-height: 18px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: right;
+    }
+
+    .extension-manager {
+      margin-top: 28px;
+      padding: 22px;
+      border: 1px solid var(--border, #292933);
+      border-radius: 16px;
+      background: var(--surface, #111116);
+    }
+    .extension-manager h2 { margin: 0 0 8px; }
+    .extension-manager p { opacity: .72; line-height: 1.5; }
+    .extension-actions { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0; }
+    .extension-actions button, .extension-card button {
+      padding:10px 14px; border:1px solid #383844; border-radius:9px;
+      background:#1b1b24; color:inherit; cursor:pointer;
+    }
+    .extension-actions button.primary { background:#6d5dfc; border-color:#6d5dfc; color:white; }
+    .extension-list { display:grid; gap:10px; }
+    .extension-card {
+      display:flex; align-items:center; justify-content:space-between;
+      gap:16px; padding:14px; border:1px solid #292933; border-radius:12px;
+    }
+    .extension-card strong { display:block; overflow-wrap:anywhere; }
+    .extension-card small { display:block; margin-top:5px; opacity:.65; overflow-wrap:anywhere; }
+    .extension-empty { padding:18px; border:1px dashed #383844; border-radius:12px; opacity:.7; }
+    #extension-status { min-height:22px; font-size:13px; }
+
+</style>
+</head>
+
+<body>
+  <main class="settings-shell">
+    <div class="brand">
+      <div class="brand-mark">A</div>
+      <div class="brand-copy">
+        <strong>Apraxus Browser</strong>
+        <span>Browser for the next internet</span>
+      </div>
+    </div>
+
+    <h1>Settings</h1>
+    <p class="subtitle">
+      Control privacy, permissions and browser behavior.
+    </p>
+
+    <section class="section">
+      <h2>Site permissions</h2>
+      <p class="section-description">
+        Choose which browser capabilities sites can request.
+      </p>
+
+      <div class="permission-row">
+        <div>
+          <div class="permission-name">Camera</div>
+          <div class="permission-help">Allow websites to request camera access.</div>
+        </div>
+        <select class="permission-select" data-permission="media">
+          <option value="deny">Blocked</option>
+          <option value="allow">Allowed</option>
+        </select>
+      </div>
+
+      <div class="permission-row">
+        <div>
+          <div class="permission-name">Microphone</div>
+          <div class="permission-help">Allow websites to request microphone access.</div>
+        </div>
+        <select class="permission-select" data-permission="audioCapture">
+          <option value="deny">Blocked</option>
+          <option value="allow">Allowed</option>
+        </select>
+      </div>
+
+      <div class="permission-row">
+        <div>
+          <div class="permission-name">Geolocation</div>
+          <div class="permission-help">Allow websites to request your location.</div>
+        </div>
+        <select class="permission-select" data-permission="geolocation">
+          <option value="deny">Blocked</option>
+          <option value="allow">Allowed</option>
+        </select>
+      </div>
+
+      <div class="permission-row">
+        <div>
+          <div class="permission-name">Notifications</div>
+          <div class="permission-help">Allow websites to request notifications.</div>
+        </div>
+        <select class="permission-select" data-permission="notifications">
+          <option value="deny">Blocked</option>
+          <option value="allow">Allowed</option>
+        </select>
+      </div>
+
+      <div class="actions">
+        <button id="reset-permissions" class="danger" type="button">
+          Reset permissions
+        </button>
+      </div>
+
+      <div id="permission-status" class="status"></div>
+    </section>
+
+    <section class="section">
+      <h2>Password Manager</h2>
+      <p class="section-description">
+        Saved sign-ins are protected using the operating system's secure storage.
+      </p>
+
+      <div class="password-form">
+        <div class="permission-row">
+          <div>
+            <div class="permission-name">Website</div>
+            <div class="permission-help">Example: https://example.com</div>
+          </div>
+          <input
+            id="password-origin"
+            type="text"
+            placeholder="https://example.com"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="permission-row">
+          <div>
+            <div class="permission-name">Username</div>
+            <div class="permission-help">Account username or email.</div>
+          </div>
+          <input
+            id="password-username"
+            type="text"
+            placeholder="Username or email"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="permission-row">
+          <div>
+            <div class="permission-name">Password</div>
+            <div class="permission-help">Stored using OS secure storage.</div>
+          </div>
+          <input
+            id="password-value"
+            type="password"
+            placeholder="Password"
+            autocomplete="new-password"
+          />
+        </div>
+
+        <div class="actions">
+          <button id="save-password" type="button">
+            Save login
+          </button>
+        </div>
+      </div>
+
+      <div id="password-list">
+        <div class="permission-help">No saved passwords.</div>
+      </div>
+
+      <div class="actions">
+        <button id="refresh-passwords" type="button">
+          Refresh saved logins
+        </button>
+      </div>
+
+      <div id="password-status" class="status"></div>
+    </section>
+    <section class="section">
+      <h2>Clear Browsing Data</h2>
+      <p class="section-description">
+        Choose what to remove from your normal browsing session.
+        Saved passwords are not deleted.
+      </p>
+
+      <div class="permission-row">
+        <div>
+          <div class="permission-name">Browsing history</div>
+          <div class="permission-help">Remove the saved list of visited pages.</div>
+        </div>
+        <input id="clear-data-history" type="checkbox" checked />
+      </div>
+
+      <div class="permission-row">
+        <div>
+          <div class="permission-name">Cached files</div>
+          <div class="permission-help">Remove cached website resources.</div>
+        </div>
+        <input id="clear-data-cache" type="checkbox" checked />
+      </div>
+
+      <div class="permission-row">
+        <div>
+          <div class="permission-name">Cookies and site data</div>
+          <div class="permission-help">
+            May sign you out of websites and remove their local data.
+          </div>
+        </div>
+        <input id="clear-data-site-data" type="checkbox" checked />
+      </div>
+
+      <div class="actions">
+        <button id="clear-browsing-data" class="danger" type="button">
+          Clear selected data
+        </button>
+      </div>
+
+      <div id="clear-data-status" class="status" role="status"></div>
+    </section>
+  </main>
+
+  <script>
+    const controls = Array.from(
+      document.querySelectorAll(".permission-select")
+    );
+    const status = document.getElementById("permission-status");
+    const resetButton = document.getElementById("reset-permissions");
+
+    async function loadPermissions() {
+      const permissions = await window.apraxus.getPermissionPolicy();
+
+      for (const control of controls) {
+        control.value = permissions.includes(control.dataset.permission)
+          ? "allow"
+          : "deny";
+      }
+    }
+
+    async function updatePermission(control) {
+      const permission = control.dataset.permission;
+      const allowed = control.value === "allow";
+
+      await window.apraxus.setPermission(permission, allowed);
+
+      status.textContent = `${permission} permission updated.`;
+
+      window.setTimeout(() => {
+        status.textContent = "";
+      }, 1600);
+    }
+
+    for (const control of controls) {
+      control.addEventListener("change", () => {
+        void updatePermission(control);
+      });
+    }
+
+    resetButton.addEventListener("click", async () => {
+      await window.apraxus.clearPermissionPolicy();
+      await loadPermissions();
+      status.textContent = "All permissions reset to blocked.";
+    });
+
+    const passwordList = document.getElementById("password-list");
+    const refreshPasswordsButton = document.getElementById("refresh-passwords");
+    const passwordStatus = document.getElementById("password-status");
+
+    const passwordOrigin = document.getElementById("password-origin");
+    const passwordUsername = document.getElementById("password-username");
+    const passwordValue = document.getElementById("password-value");
+    const savePasswordButton = document.getElementById("save-password");
+
+    savePasswordButton.addEventListener("click", async () => {
+      const origin = passwordOrigin.value.trim();
+      const username = passwordUsername.value.trim();
+      const password = passwordValue.value;
+
+      if (!origin || !username || !password) {
+        passwordStatus.textContent =
+          "Website, username and password are required.";
+        return;
+      }
+
+      try {
+        const saved = await window.apraxus.savePassword({
+          origin,
+          username,
+          password,
+        });
+
+        if (!saved) {
+          passwordStatus.textContent = "Unable to save this login.";
+          return;
+        }
+
+        passwordOrigin.value = "";
+        passwordUsername.value = "";
+        passwordValue.value = "";
+
+        passwordStatus.textContent = "Login saved securely.";
+        await loadPasswords();
+      } catch {
+        passwordStatus.textContent =
+          "Secure storage is unavailable on this device.";
+      }
+    });
+
+    function renderPasswords(passwords) {
+      if (!passwords.length) {
+        passwordList.innerHTML =
+          '<div class="permission-help">No saved passwords.</div>';
+        return;
+      }
+
+      passwordList.innerHTML = "";
+
+      for (const password of passwords) {
+        const row = document.createElement("div");
+        row.className = "permission-row";
+
+        const info = document.createElement("div");
+        info.innerHTML = `
+          <div class="permission-name">${password.origin}</div>
+          <div class="permission-help">${password.username}</div>
+        `;
+
+        const actions = document.createElement("div");
+        actions.className = "actions";
+
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.className = "danger";
+        deleteButton.textContent = "Delete";
+
+        deleteButton.addEventListener("click", async () => {
+          const deleted = await window.apraxus.deletePassword(password.id);
+
+          if (deleted) {
+            passwordStatus.textContent = "Saved login deleted.";
+            await loadPasswords();
+          }
+        });
+
+        actions.appendChild(deleteButton);
+        row.appendChild(info);
+        row.appendChild(actions);
+        passwordList.appendChild(row);
+      }
+    }
+
+    async function loadPasswords() {
+      const passwords = await window.apraxus.getPasswords();
+      renderPasswords(passwords);
+    }
+
+    refreshPasswordsButton.addEventListener("click", () => {
+      void loadPasswords();
+    });
+
+    const clearDataButton = document.getElementById("clear-browsing-data");
+    const clearDataStatus = document.getElementById("clear-data-status");
+
+    clearDataButton.addEventListener("click", async () => {
+      const options = {
+        history: document.getElementById("clear-data-history").checked,
+        cache: document.getElementById("clear-data-cache").checked,
+        siteData: document.getElementById("clear-data-site-data").checked,
+      };
+
+      if (!options.history && !options.cache && !options.siteData) {
+        clearDataStatus.textContent = "Select at least one data category.";
+        return;
+      }
+
+      clearDataButton.disabled = true;
+      clearDataStatus.textContent = "Clearing selected data…";
+
+      try {
+        const result = await window.apraxus.clearBrowsingData(options);
+
+        clearDataStatus.textContent = result.success
+          ? "Selected browsing data cleared. Saved passwords were kept."
+          : (result.error || "Unable to clear browsing data.");
+      } catch {
+        clearDataStatus.textContent = "Unable to clear browsing data.";
+      } finally {
+        clearDataButton.disabled = false;
+      }
+    });
+
+    void loadPermissions();
+    void loadPasswords();
+
+    void loadPermissions();
+  </script>
+
+  <section class="extension-manager" id="extensions-manager">
+    <h2>Extensions</h2>
+    <p>Manage compatible unpacked Chromium extensions. Extension compatibility varies; only load extensions from sources you trust.</p>
+    <div class="extension-actions">
+      <button class="primary" id="load-extension">Load unpacked extension</button>
+      <button id="refresh-extensions">Refresh list</button>
+    </div>
+    <div id="extension-status" role="status" aria-live="polite"></div>
+    <div class="extension-list" id="extension-list">
+      <div class="extension-empty">Loading extensions…</div>
+    </div>
+  </section>
+  <script>
+    (() => {
+      const list = document.getElementById("extension-list");
+      const status = document.getElementById("extension-status");
+      const loadButton = document.getElementById("load-extension");
+      const refreshButton = document.getElementById("refresh-extensions");
+
+      const showStatus = (message) => { status.textContent = message; };
+
+      async function refreshExtensions() {
+        list.replaceChildren();
+        const loading = document.createElement("div");
+        loading.className = "extension-empty";
+        loading.textContent = "Loading extensions…";
+        list.appendChild(loading);
+        try {
+          const extensions = await window.apraxus.getExtensions();
+          list.replaceChildren();
+          if (!extensions.length) {
+            const empty = document.createElement("div");
+            empty.className = "extension-empty";
+            empty.textContent = "No extensions loaded yet.";
+            list.appendChild(empty);
+            return;
+          }
+          for (const extension of extensions) {
+            const card = document.createElement("div");
+            card.className = "extension-card";
+            const details = document.createElement("div");
+            const name = document.createElement("strong");
+            name.textContent = extension.name;
+            const meta = document.createElement("small");
+            meta.textContent = "Version " + extension.version + " · " + extension.id;
+            const pathText = document.createElement("small");
+            pathText.textContent = extension.path;
+            details.append(name, meta, pathText);
+            const actions = document.createElement("div");
+            actions.style.display = "flex";
+            actions.style.flexWrap = "wrap";
+            actions.style.gap = "8px";
+
+            const toggle = document.createElement("button");
+            toggle.className = "extension-toggle";
+            toggle.textContent = extension.enabled ? "Disable" : "Enable";
+            toggle.setAttribute("aria-pressed", String(extension.enabled));
+            toggle.addEventListener("click", async () => {
+              toggle.disabled = true;
+              showStatus((extension.enabled ? "Disabling " : "Enabling ") + extension.name + "…");
+              try {
+                const result = await window.apraxus.setExtensionEnabled(
+                  extension.id,
+                  !extension.enabled
+                );
+                showStatus(result.success
+                  ? (extension.enabled ? "Extension disabled." : "Extension enabled.")
+                  : (result.error || "Could not change extension state."));
+                await refreshExtensions();
+              } catch (error) {
+                showStatus(error instanceof Error ? error.message : "Could not change extension state.");
+                toggle.disabled = false;
+              }
+            });
+
+            const remove = document.createElement("button");
+            remove.textContent = "Remove";
+            remove.addEventListener("click", async () => {
+              remove.disabled = true;
+              try {
+                const result = await window.apraxus.removeExtension(extension.id);
+                showStatus(result.success ? "Extension removed." : (result.error || "Could not remove extension."));
+                await refreshExtensions();
+              } catch (error) {
+                showStatus(error instanceof Error ? error.message : "Could not remove extension.");
+                remove.disabled = false;
+              }
+            });
+
+            actions.append(toggle, remove);
+            card.append(details, actions);
+            list.appendChild(card);
+          }
+        } catch (error) {
+          list.replaceChildren();
+          const empty = document.createElement("div");
+          empty.className = "extension-empty";
+          empty.textContent = "Could not retrieve extensions.";
+          list.appendChild(empty);
+          showStatus(error instanceof Error ? error.message : "Extension list unavailable.");
+        }
+      }
+
+      loadButton.addEventListener("click", async () => {
+        loadButton.disabled = true;
+        showStatus("Choose an extension folder…");
+        try {
+          const folder = await window.apraxus.chooseExtensionFolder();
+          if (!folder) {
+            showStatus("Folder selection cancelled.");
+            return;
+          }
+          showStatus("Loading extension…");
+          const result = await window.apraxus.loadExtension(folder);
+          showStatus(result.success ? "Extension loaded: " + result.extension.name : (result.error || "Extension could not be loaded."));
+          await refreshExtensions();
+        } catch (error) {
+          showStatus(error instanceof Error ? error.message : "Extension could not be loaded.");
+        } finally {
+          loadButton.disabled = false;
+        }
+      });
+
+      refreshButton.addEventListener("click", refreshExtensions);
+      void refreshExtensions();
+    })();
+  </script>
+
+</body>
+</html>

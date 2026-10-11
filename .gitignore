@@ -1,3 +1,19 @@
 node_modules/
 dist/
 .DS_Store
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Local credentials and provider configuration
+secrets/
+*.secret
+
+# Local Apraxus provider settings
+.apraxus.local.json
+
+# Local development backups
+*.backup
+*.backup-*
